@@ -57,7 +57,8 @@ export default function ChatWindow({ onClose }) {
           id: `${msg.sender}-${Date.now()}-${Math.random()}`,
           sender: msg.sender,
           content: msg.content,
-          createdAt: msg.createdAt
+          createdAt: msg.createdAt,
+          isAI: msg.isAI || false
         };
         console.log('📝 Formatted message:', formattedMessage);
         
@@ -176,9 +177,17 @@ export default function ChatWindow({ onClose }) {
             <div className={`max-w-[80%] px-3 py-2 rounded-lg ${
               m.sender === "user" 
                 ? "bg-blue-500 text-white rounded-br-none" 
-                : "bg-white border text-gray-800 rounded-bl-none shadow-sm"
+                : m.isAI 
+                  ? "bg-purple-100 border border-purple-200 text-purple-900 rounded-bl-none shadow-sm"
+                  : "bg-white border text-gray-800 rounded-bl-none shadow-sm"
             }`}>
               {m.content}
+              {m.isAI && (
+                <div className="flex items-center mt-1 space-x-1">
+                  <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
+                  <span className="text-xs text-purple-600 font-medium">AI Generated</span>
+                </div>
+              )}
             </div>
             <span className="text-xs text-gray-500 mt-1">
               {formatTime(m.createdAt)}

@@ -79,6 +79,7 @@ export default function AdminDashboard() {
         id: msg.id || Date.now() + Math.random(),
         text: msg.message || msg.content,
         isAdmin: msg.isAdmin || msg.sender === 'admin',
+        isAI: msg.isAI || false,
         timestamp: msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }));
       setMessages(formattedMessages);
@@ -96,6 +97,7 @@ export default function AdminDashboard() {
         id: Date.now() + Math.random(),
         text: msg.content,
         isAdmin: msg.sender === 'admin',
+        isAI: msg.isAI || false,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       
@@ -184,7 +186,10 @@ export default function AdminDashboard() {
   const sendMessage = () => {
     if (!newMessage.trim() || !selectedSession) return;
 
-    socket.emit('admin_message', { sessionId: selectedSession.sessionId, content: newMessage.trim() });
+    socket.emit('admin_message', { 
+      sessionId: selectedSession.sessionId, 
+      content: newMessage.trim()
+    });
 
     // Update session's last message in the sidebar
     setSessions(prev => prev.map(session => 

@@ -105,7 +105,8 @@ export default function ChatView({
               <MessageBubble 
                 key={message.id} 
                 message={message} 
-                isAdmin={message.isAdmin} 
+                isAdmin={message.isAdmin}
+                isAI={message.isAI}
               />
             ))}
             <div ref={messagesEndRef} />
