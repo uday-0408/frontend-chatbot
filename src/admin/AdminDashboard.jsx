@@ -4,7 +4,7 @@ import Sidebar from './components/Sidebar';
 import ChatView from './ChatView';
 import AdminLogin from './components/AdminLogin';
 
-const socket = io('http://localhost:4000');
+const socket = io('https://backend-chatbot-vwcl.onrender.com');
 
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
