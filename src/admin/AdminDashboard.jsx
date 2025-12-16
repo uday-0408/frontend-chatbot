@@ -14,7 +14,9 @@ export default function AdminDashboard() {
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [viewFilter, setViewFilter] = useState('all'); // 'all', 'active', 'past'
-  const [aiModeEnabled, setAiModeEnabled] = useState(false);
+  const [aiModeEnabled, setAiModeEnabled] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Simple admin authentication check
   useEffect(() => {
@@ -23,6 +25,28 @@ export default function AdminDashboard() {
       setIsAuthenticated(true);
     }
   }, []);
+
+  // Handle responsive behavior and mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      const isMobileScreen = window.innerWidth < 1024; // lg breakpoint is 1024px
+      setIsMobile(isMobileScreen);
+      
+      // Close mobile menu if switching to desktop
+      if (!isMobileScreen && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    // Check initial screen size
+    checkMobile();
+
+    // Add resize listener
+    window.addEventListener('resize', checkMobile);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [isMobileMenuOpen]);
 
   const handleLogin = (username, password) => {
     // Simple hardcoded credentials
@@ -152,10 +176,10 @@ export default function AdminDashboard() {
     
     setSelectedSession(session);
     setMessages([]); // Clear previous messages while loading
-    setAiModeEnabled(false); // Reset AI mode when switching sessions
+    setAiModeEnabled(true); // Reset AI mode when switching sessions (default to enabled)
     
     console.log('✅ Session selection completed');
-    console.log('🤖 AI mode reset to: false\n');
+    console.log('🤖 AI mode reset to: true\n');
   };
 
   const toggleAiMode = () => {
@@ -218,27 +242,72 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-900">
-      {/* Sidebar */}
-      <Sidebar 
-        sessions={sessions} 
-        selectedSession={selectedSession} 
-        onSessionSelect={handleSessionSelect}
-        isLoading={isLoading}
-        onLogout={logout}
-      />
+    <div className="h-screen flex bg-gray-900">
+      {/* Desktop Sidebar - Always visible on large screens, hidden on mobile */}
+      {!isMobile && (
+        <div className="w-80 xl:w-96 flex flex-shrink-0">
+          <Sidebar 
+            sessions={sessions} 
+            selectedSession={selectedSession} 
+            onSessionSelect={handleSessionSelect}
+            isLoading={isLoading}
+            onLogout={logout}
+          />
+        </div>
+      )}
+
+      {/* Mobile Menu Button - Only functional on mobile screens */}
+      {isMobile && (
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="lg:hidden fixed top-4 left-4 z-50 bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-md shadow-lg transition-all duration-200"
+          aria-label="Toggle sidebar menu"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {isMobileMenuOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
+        </button>
+      )}
+
+      {/* Mobile Sidebar Overlay - Only on mobile screens */}
+      {isMobile && isMobileMenuOpen && (
+        <>
+          <div 
+            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30" 
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <div className="lg:hidden fixed left-0 top-0 z-40 h-full w-80">
+            <Sidebar 
+              sessions={sessions} 
+              selectedSession={selectedSession} 
+              onSessionSelect={(session) => {
+                handleSessionSelect(session);
+                setIsMobileMenuOpen(false);
+              }}
+              isLoading={isLoading}
+              onLogout={logout}
+            />
+          </div>
+        </>
+      )}
 
       {/* Main Chat Area */}
-      <ChatView 
-        selectedSession={selectedSession}
-        messages={messages}
-        newMessage={newMessage}
-        onMessageChange={setNewMessage}
-        onSendMessage={sendMessage}
-        onKeyPress={handleKeyPress}
-        aiModeEnabled={aiModeEnabled}
-        onToggleAiMode={toggleAiMode}
-      />
+      <div className="flex-1 min-w-0 max-h-screen overflow-hidden">
+        <ChatView 
+          selectedSession={selectedSession}
+          messages={messages}
+          newMessage={newMessage}
+          onMessageChange={setNewMessage}
+          onSendMessage={sendMessage}
+          onKeyPress={handleKeyPress}
+          aiModeEnabled={aiModeEnabled}
+          onToggleAiMode={toggleAiMode}
+        />
+      </div>
     </div>
   );
 }
